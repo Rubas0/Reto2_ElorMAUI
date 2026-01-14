@@ -1,0 +1,256 @@
+@page "/"
+@using Reto02_MAUI.Models
+@using Reto02_MAUI.Services
+@using Reto02_MAUI.Helpers
+@inject ICentroService CentroService
+@inject NavigationManager Navigation
+
+<div class="container-fluid p-4">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h1>Centros Educativos Euskadi</h1>
+        <p class="text-muted">Explora y filtra los centros educativos</p>
+    </div>
+
+    <!-- Sección de Filtros -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filtros de Búsqueda</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+
+                <!-- Filtro DTITUC -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Tipo de Centro (DTITUC)</label>
+                    <select class="form-select" @bind="selectedTipo" @bind:after="OnTipoChanged">
+                        <option value="">Todos</option>
+                        @foreach (var tipo in tiposCentro)
+                        {
+                            <option value="@tipo">@tipo</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Filtro DTERRE -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Territorio (DTERRE)</label>
+                    <select class="form-select" @bind="selectedTerritorio" @bind:after="OnTerritorioChanged" disabled="@(!territorios.Any())">
+                        <option value="">Todos</option>
+                        @foreach (var territorio in territorios)
+                        {
+                            <option value="@territorio">@territorio</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Filtro DMUNIC -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Municipio (DMUNIC)</label>
+                    <select class="form-select" @bind="selectedMunicipio" disabled="@(!municipios.Any())">
+                        <option value="">Todos</option>
+                        @foreach (var municipio in municipios)
+                        {
+                            <option value="@municipio">@municipio</option>
+                        }
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="row mt-3">
+                <div class="col">
+                    <button class="btn btn-primary me-2" @onclick="BuscarCentros">
+                        Buscar
+                    </button>
+                    <button class="btn btn-secondary" @onclick="LimpiarFiltros">
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicador de carga -->
+    @if (isLoading)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Información de resultados -->
+        <div class="alert alert-info">
+            Mostrando <strong>@centrosPaginados.Count</strong> de <strong>@totalCentros</strong> centros encontrados
+        </div>
+
+        <!-- Tabla de Centros -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Municipio</th>
+                        <th>Territorio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var centro in centrosPaginados)
+                    {
+                        <tr>
+                            <td>@centro. CCEN</td>
+                            <td>@centro.NOM</td>
+                            <td><span class="badge bg-primary">@centro. DGENRC</span></td>
+                            <td>@centro.DMUNIC</td>
+                            <td>@centro.DTERRC</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" @onclick="() => VerDetalle(centro.CCEN)">
+                                    Ver Detalles
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Paginación">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="PaginaAnterior">Anterior</button>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link">Página @paginaActual de @totalPaginas</span>
+                </li>
+                <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                    <button class="page-link" @onclick="PaginaSiguiente">Siguiente</button>
+                </li>
+            </ul>
+        </nav>
+    }
+
+</div>
+
+@code {
+    private List<string> tiposCentro = new();
+    private List<string> territorios = new();
+    private List<string> municipios = new();
+
+    private string selectedTipo = "";
+    private string selectedTerritorio = "";
+    private string selectedMunicipio = "";
+
+    private List<Centro> centrosFiltrados = new();
+    private List<Centro> centrosPaginados = new();
+
+    private int paginaActual = 1;
+    private int totalPaginas = 1;
+    private int pageSize = 10;
+    private int totalCentros = 0;
+
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosIniciales();
+    }
+
+    private async Task CargarDatosIniciales()
+    {
+        isLoading = true;
+
+        tiposCentro = await CentroService.GetTiposCentroAsync();
+        await BuscarCentros();
+
+        isLoading = false;
+    }
+
+    private async Task OnTipoChanged()
+    {
+        selectedTerritorio = "";
+        selectedMunicipio = "";
+
+        territorios = await CentroService.GetTerritoriosAsync(
+            string.IsNullOrEmpty(selectedTipo) ? null : selectedTipo
+        );
+
+        municipios.Clear();
+    }
+
+    private async Task OnTerritorioChanged()
+    {
+        selectedMunicipio = "";
+
+        municipios = await CentroService.GetMunicipiosAsync(
+            string.IsNullOrEmpty(selectedTerritorio) ? null : selectedTerritorio
+        );
+    }
+
+    private async Task BuscarCentros()
+    {
+        isLoading = true;
+
+        var filter = new CentroFilter
+        {
+            DTITUC = string.IsNullOrEmpty(selectedTipo) ? null : selectedTipo,
+            DTERRE = string.IsNullOrEmpty(selectedTerritorio) ? null : selectedTerritorio,
+            DMUNIC = string.IsNullOrEmpty(selectedMunicipio) ? null : selectedMunicipio
+        };
+
+        centrosFiltrados = await CentroService.GetCentrosFiltradosAsync(filter);
+        totalCentros = centrosFiltrados.Count;
+
+        paginaActual = 1;
+        CargarPagina();
+
+        isLoading = false;
+    }
+
+    private void CargarPagina()
+    {
+        var paginated = PaginatedList<Centro>.Create(centrosFiltrados, paginaActual, pageSize);
+        centrosPaginados = paginated.Items;
+        totalPaginas = paginated.TotalPages;
+    }
+
+    private void PaginaAnterior()
+    {
+        if (paginaActual > 1)
+        {
+            paginaActual--;
+            CargarPagina();
+        }
+    }
+
+    private void PaginaSiguiente()
+    {
+        if (paginaActual < totalPaginas)
+        {
+            paginaActual++;
+            CargarPagina();
+        }
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        selectedTipo = "";
+        selectedTerritorio = "";
+        selectedMunicipio = "";
+        territorios.Clear();
+        municipios.Clear();
+        await BuscarCentros();
+    }
+
+    private void VerDetalle(int ccen)
+    {
+        Navigation.NavigateTo($"/centro/{ccen}");
+    }
+}

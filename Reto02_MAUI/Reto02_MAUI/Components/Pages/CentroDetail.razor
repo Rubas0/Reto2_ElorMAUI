@@ -1,0 +1,273 @@
+﻿@page "/centro/{CCEN: int}"
+@using Reto02_MAUI. Models
+@using Reto02_MAUI.Services
+@inject ICentroService CentroService
+@inject IWeatherService WeatherService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<div class="container-fluid p-4">
+
+    @if (isLoading)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3">Cargando información del centro...</p>
+        </div>
+    }
+    else if (centro == null)
+    {
+        <div class="alert alert-danger">
+            <h4>Centro no encontrado</h4>
+            <p>El centro solicitado no existe en la base de datos.</p>
+            <button class="btn btn-secondary" @onclick="Volver">Volver</button>
+        </div>
+    }
+    else
+    {
+        <!-- Botón Volver arriba -->
+        <div class="mb-3">
+            <button class="btn btn-secondary" @onclick="Volver">
+                ← Volver al listado
+            </button>
+        </div>
+
+        <!-- Información del Centro -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">@centro.NOM</h3>
+                <small>Código: @centro.CCEN</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Tipo: </td>
+                                    <td><span class="badge bg-primary">@centro. DGENRC</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Dirección:</td>
+                                    <td>@centro.DOMI</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Código Postal:</td>
+                                    <td>@centro.CPOS</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Municipio:</td>
+                                    <td>@centro.DMUNIC</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Territorio:</td>
+                                    <td>@centro.DTERRC</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Teléfono:</td>
+                                    <td>@centro. TelefonoFormateado</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Email:</td>
+                                    <td><a href="mailto:@centro. EMAIL">@centro.EMAIL</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Web:</td>
+                                    <td><a href="@centro. PAGINA" target="_blank">Visitar sitio web</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Coordenadas -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p class="text-muted small mb-0">
+                            <strong>Coordenadas:</strong> @centro.CoordenadasTexto
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información Meteorológica -->
+        @if (weatherInfo != null && ! string.IsNullOrEmpty(weatherInfo.Descripcion))
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Información Meteorológica</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Clima Actual -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-auto">
+                            @if (! string.IsNullOrEmpty(weatherInfo.IconoUrl))
+                            {
+                                <img src="@weatherInfo. IconoUrl" alt="@weatherInfo.Descripcion" style="width: 80px; height: 80px;"/>
+                            }
+                        </div>
+                        <div class="col">
+                            <h2 class="mb-0">@weatherInfo. TemperaturaTexto</h2>
+                            <p class="text-muted mb-0">@weatherInfo. Descripcion</p>
+                            <small class="text-muted">@weatherInfo.Ciudad</small>
+                        </div>
+                    </div>
+
+                    <!-- Previsión próximos días -->
+                    @if (weatherInfo.Prevision != null && weatherInfo. Prevision.Any())
+                    {
+                        <h5 class="mb-3">Previsión próximos días</h5>
+                        <div class="row g-2">
+                            @foreach (var prevision in weatherInfo.Prevision)
+                            {
+                                <div class="col-md-2 col-4">
+                                    <div class="card text-center">
+                                        <div class="card-body p-2">
+                                            <p class="small mb-1 fw-bold">@prevision.FechaTexto</p>
+                                            @if (!string.IsNullOrEmpty(prevision.IconoUrl))
+                                            {
+                                                <img src="@prevision.IconoUrl" alt="@prevision.Descripcion" style="width: 50px; height: 50px;"/>
+                                            }
+                                            <p class="small mb-0 text-danger fw-bold">@prevision.TempMaxTexto</p>
+                                            <p class="small mb-0 text-primary fw-bold">@prevision.TempMinTexto</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <strong>Información meteorológica no disponible</strong>
+                <p class="mb-0">Verifica que tienes configurada la API Key de OpenWeatherMap en WeatherService. cs</p>
+            </div>
+        }
+
+        <!-- Mapa con Mapbox -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Ubicación en el Mapa</h4>
+            </div>
+            <div class="card-body p-0">
+                <div id="map" style="height: 500px; width: 100%;"></div>
+            </div>
+        </div>
+
+        <!-- Botón Volver abajo -->
+        <div class="text-center mb-4">
+            <button class="btn btn-secondary btn-lg" @onclick="Volver">
+                ← Volver al listado
+            </button>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public int CCEN { get; set; }
+
+    private Centro centro;
+    private WeatherInfo weatherInfo;
+    private bool isLoading = true;
+
+    private const string MAPBOX_TOKEN = "pk.eyJ1IjoicnViYXNvIiwiYSI6ImNta2VkN2hnZzAwNG0zY3FwazM5ZGVvMWgifQ.7OF2w8ytXYGzHQMNKQ7FVg";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && centro != null)
+        {
+            await InicializarMapa();
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        isLoading = true;
+
+        try
+        {
+            // Cargar centro
+            centro = await CentroService.GetCentroByCodigoAsync(CCEN);
+
+            if (centro != null)
+            {
+                // Cargar clima
+                try
+                {
+                    weatherInfo = await WeatherService.GetWeatherAsync(
+                        centro. LatitudReal,
+                        centro.LongitudReal,
+                        centro.DMUNIC
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error cargando clima: {ex.Message}");
+                    weatherInfo = null;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando datos:  {ex.Message}");
+            centro = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task InicializarMapa()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(MAPBOX_TOKEN) || MAPBOX_TOKEN == "TU_TOKEN_MAPBOX_AQUI")
+            {
+                Console.WriteLine("Token de Mapbox no configurado");
+                return;
+            }
+
+            var descripcion = $"{centro.DOMI}<br/>{centro.DMUNIC}, {centro.DTERRC}<br/>Tel: {centro.TelefonoFormateado}";
+
+            await JSRuntime.InvokeVoidAsync(
+                "initializeMap",
+                MAPBOX_TOKEN,
+                centro.LatitudReal,
+                centro.LongitudReal,
+                15,
+                centro.NOM,
+                descripcion
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error inicializando mapa: {ex.Message}");
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
