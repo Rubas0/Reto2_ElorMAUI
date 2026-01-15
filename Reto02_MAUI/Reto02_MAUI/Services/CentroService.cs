@@ -14,9 +14,8 @@ namespace Reto02_MAUI.Services
         private List<Centro> _centros;
         private readonly HttpClient _httpClient;
 
-        // CONFIGURACION:  Cambiar cuando ElorBase esté desplegado
-        private const bool USE_API_REST = false; // true cuando Spring Boot esté listo
-        private const string API_BASE_URL = "http://localhost:8080/api/centros";
+        private const bool USE_API_REST = false;
+        private const string API_BASE_URL = "http://SERVIDOR:PUERTO/api/centros";
 
         public CentroService()
         {
@@ -37,7 +36,6 @@ namespace Reto02_MAUI.Services
             }
         }
 
-        // OPCION A: API REST (cuando ElorBase esté listo)
         private async Task<List<Centro>> GetAllCentrosFromApiAsync()
         {
             try
@@ -54,12 +52,10 @@ namespace Reto02_MAUI.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error API REST: {ex.Message}");
-                // Fallback a JSON local
                 return await GetAllCentrosFromLocalJsonAsync();
             }
         }
 
-        // OPCION B: JSON Local (desarrollo sin backend)
         private async Task<List<Centro>> GetAllCentrosFromLocalJsonAsync()
         {
             try
@@ -84,22 +80,18 @@ namespace Reto02_MAUI.Services
             }
         }
 
-        // USO DE LINQ (requisito de la rúbrica)
         public async Task<List<Centro>> GetCentrosFiltradosAsync(CentroFilter filter)
         {
             if (USE_API_REST)
             {
-                // Delegar filtrado al servidor
                 return await GetCentrosFiltradosFromApiAsync(filter);
             }
             else
             {
-                // Filtrado local con LINQ
                 return await GetCentrosFiltradosLocalAsync(filter);
             }
         }
 
-        // Filtrado mediante API REST
         private async Task<List<Centro>> GetCentrosFiltradosFromApiAsync(CentroFilter filter)
         {
             try
@@ -112,8 +104,8 @@ namespace Reto02_MAUI.Services
                 if (!string.IsNullOrEmpty(filter.DMUNIC))
                     queryParams.Add($"dmunic={Uri.EscapeDataString(filter.DMUNIC)}");
 
-                var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                var url = $"{API_BASE_URL}/filtrados{query}";
+                var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+                var url = $"{API_BASE_URL}/filtrados{queryString}";
 
                 var response = await _httpClient.GetStringAsync(url);
                 var centros = JsonSerializer.Deserialize<List<Centro>>(response, new JsonSerializerOptions
@@ -131,7 +123,6 @@ namespace Reto02_MAUI.Services
             }
         }
 
-        // Filtrado local con LINQ (desarrollo)
         private async Task<List<Centro>> GetCentrosFiltradosLocalAsync(CentroFilter filter)
         {
             var centros = await GetAllCentrosAsync();
@@ -139,18 +130,18 @@ namespace Reto02_MAUI.Services
             if (filter.IsEmpty())
                 return centros.OrderBy(c => c.NOM).ToList();
 
-            var query = centros.AsQueryable();
+            var filteredQuery = centros.AsEnumerable();
 
             if (!string.IsNullOrEmpty(filter.DTITUC))
-                query = query.Where(c => c.DTITUC == filter.DTITUC);
+                filteredQuery = filteredQuery.Where(c => c.DTITUC == filter.DTITUC);
 
             if (!string.IsNullOrEmpty(filter.DTERRE))
-                query = query.Where(c => c.DTERRC == filter.DTERRE);
+                filteredQuery = filteredQuery.Where(c => c.DTERRC == filter.DTERRE);
 
             if (!string.IsNullOrEmpty(filter.DMUNIC))
-                query = query.Where(c => c.DMUNIC == filter.DMUNIC);
+                filteredQuery = filteredQuery.Where(c => c.DMUNIC == filter.DMUNIC);
 
-            return query.OrderBy(c => c.NOM).ToList();
+            return filteredQuery.OrderBy(c => c.NOM).ToList();
         }
 
         public async Task<List<string>> GetTiposCentroAsync()
@@ -164,7 +155,7 @@ namespace Reto02_MAUI.Services
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error API REST tipos:  {ex.Message}");
+                    Console.WriteLine($"Error API REST tipos: {ex.Message}");
                 }
             }
 
@@ -178,8 +169,8 @@ namespace Reto02_MAUI.Services
             {
                 try
                 {
-                    var query = !string.IsNullOrEmpty(dtituc) ? $"?dtituc={Uri.EscapeDataString(dtituc)}" : "";
-                    var response = await _httpClient.GetStringAsync($"{API_BASE_URL}/territorios{query}");
+                    var queryString = !string.IsNullOrEmpty(dtituc) ? $"?dtituc={Uri.EscapeDataString(dtituc)}" : "";
+                    var response = await _httpClient.GetStringAsync($"{API_BASE_URL}/territorios{queryString}");
                     return JsonSerializer.Deserialize<List<string>>(response) ?? new List<string>();
                 }
                 catch (Exception ex)
@@ -189,10 +180,12 @@ namespace Reto02_MAUI.Services
             }
 
             var centros = await GetAllCentrosAsync();
-            var query = centros.AsQueryable();
+            var territoriosQuery = centros.AsEnumerable();
+
             if (!string.IsNullOrEmpty(dtituc))
-                query = query.Where(c => c.DTITUC == dtituc);
-            return query.Select(c => c.DTERRC).Distinct().OrderBy(t => t).ToList();
+                territoriosQuery = territoriosQuery.Where(c => c.DTITUC == dtituc);
+
+            return territoriosQuery.Select(c => c.DTERRC).Distinct().OrderBy(t => t).ToList();
         }
 
         public async Task<List<string>> GetMunicipiosAsync(string dterre = null)
@@ -201,8 +194,8 @@ namespace Reto02_MAUI.Services
             {
                 try
                 {
-                    var query = !string.IsNullOrEmpty(dterre) ? $"?dterre={Uri.EscapeDataString(dterre)}" : "";
-                    var response = await _httpClient.GetStringAsync($"{API_BASE_URL}/municipios{query}");
+                    var queryString = !string.IsNullOrEmpty(dterre) ? $"?dterre={Uri.EscapeDataString(dterre)}" : "";
+                    var response = await _httpClient.GetStringAsync($"{API_BASE_URL}/municipios{queryString}");
                     return JsonSerializer.Deserialize<List<string>>(response) ?? new List<string>();
                 }
                 catch (Exception ex)
@@ -212,10 +205,12 @@ namespace Reto02_MAUI.Services
             }
 
             var centros = await GetAllCentrosAsync();
-            var query = centros.AsQueryable();
+            var municipiosQuery = centros.AsEnumerable();
+
             if (!string.IsNullOrEmpty(dterre))
-                query = query.Where(c => c.DTERRC == dterre);
-            return query.Select(c => c.DMUNIC).Distinct().OrderBy(m => m).ToList();
+                municipiosQuery = municipiosQuery.Where(c => c.DTERRC == dterre);
+
+            return municipiosQuery.Select(c => c.DMUNIC).Distinct().OrderBy(m => m).ToList();
         }
 
         public async Task<Centro> GetCentroByCodigoAsync(int ccen)

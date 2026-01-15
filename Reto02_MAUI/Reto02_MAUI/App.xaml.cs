@@ -5,11 +5,7 @@
         public App()
         {
             InitializeComponent();
-        }
-
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            return new Window(new MainPage()) { Title = "Reto02_MAUI" };
+            MainPage = new MainPage();
         }
     }
 }
