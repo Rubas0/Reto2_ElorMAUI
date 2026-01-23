@@ -1,43 +1,36 @@
 ﻿using Microsoft.Extensions.Logging;
 using Reto02_MAUI.Services;
+using Reto02_MAUI.Shared.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Reto02_MAUI
 {
     public static class MauiProgram
     {
-        public static MauiApp CreateMauiApp()
+        public static App CreateMauiApp()
         {
-            var builder = MauiApp.CreateBuilder();
-
+            var builder = App.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            // Registrar Blazor WebView
+            // Add device-specific services used by the Reto02_MAUI.Shared project
+            builder.Services.AddSingleton<IFormFactor, FormFactor>();
+            builder.Services.AddSingleton<ICentroService, CentroService>();
+            builder.Services.AddSingleton<IWeatherService, WeatherService>();
+
+            builder.Services.AddHttpClient();
+
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
-            // Herramientas de desarrollo solo en modo Debug
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
-
-            //REGISTRO DE SERVICIOS PERSONALIZADOS 
-
-            // Servicio de centros educativos JSON 
-            builder.Services.AddSingleton<ICentroService, CentroService>();
-
-            // Servicio OpenWeatherMap
-            builder.Services.AddSingleton<IWeatherService, WeatherService>();
-
-            // HttpClient
-            builder.Services.AddSingleton<HttpClient>();
-
-            Console.WriteLine("ICentroService -> CentroService (JSON local)");
-            Console.WriteLine("IWeatherService -> WeatherService (OpenWeatherMap API)");
 
             return builder.Build();
         }

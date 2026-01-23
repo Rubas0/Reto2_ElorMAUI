@@ -1,0 +1,226 @@
+@page "/tiempo"
+@using Reto02_MAUI.Models
+@using Reto02_MAUI.Services
+@using System.Net.Http
+
+@inject ICentroService CentroService
+@inject IWeatherService WeatherService
+@inject NavigationManager NavManager
+
+<PageTitle>Tiempo - Centros</PageTitle>
+
+<h2 class="mb-3">Buscar centros / Tiempo</h2>
+
+@if (isLoading)
+{
+    <div class="alert alert-info">Cargando datos...</div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Tipo de centro</label>
+                    <select class="form-select" @bind="filtro.DTITUC" @onchange="OnTipoChanged">
+                        <option value="">-- Todos --</option>
+                        @foreach (var t in tiposCentro)
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Territorio</label>
+                    <select class="form-select" @bind="filtro.DTERRE" @onchange="OnTerritorioChanged">
+                        <option value="">-- Todos --</option>
+                        @foreach (var t in territorios)
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Municipio</label>
+                    <select class="form-select" @bind="filtro.DMUNIC">
+                        <option value="">-- Todos --</option>
+                        @foreach (var m in municipios)
+                        {
+                            <option value="@m">@m</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-primary me-2" @onclick="Filtrar">Filtrar</button>
+                <button class="btn btn-outline-secondary me-2" @onclick="ResetFilters">Reset</button>
+                <button class="btn btn-outline-info" @onclick="Recargar">Recargar datos</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="alert alert-secondary">
+            <strong>@(centrosFiltrados?.Count ?? 0)</strong> centros encontrados
+        </div>
+    </div>
+
+    @if (centrosFiltrados != null && centrosFiltrados.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>CCEN</th>
+                        <th>Nombre</th>
+                        <th>Dirección</th>
+                        <th>CP</th>
+                        <th>Municipio</th>
+                        <th>Territorio</th>
+                        <th>Lat / Lon</th>
+                        <th>Tel</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in centrosFiltrados)
+                    {
+                        <tr>
+                            <td>@c.CCEN</td>
+                            <td>@c.NOM</td>
+                            <td style="min-width:220px;">@c.DireccionCompleta</td>
+                            <td>@c.CPOS</td>
+                            <td>@c.DMUNIC</td>
+                            <td>@c.DTERRC</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(c.LATITUD) && !string.IsNullOrEmpty(c.LONGITUD))
+                                {
+                                    @($"{c.LATITUD}, {c.LONGITUD}")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/D</span>
+                                }
+                            </td>
+                            <td>@c.TEL</td>
+                            <td style="white-space:nowrap;">
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => VerDetalle(c.CCEN)">Detalle</button>
+                                <button class="btn btn-sm btn-success" @onclick="() => AbrirMapa(c)">Mapa</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">No se han encontrado centros con los filtros seleccionados.</div>
+    }
+}
+
+@code {
+    // Listas para selects
+    private List<string> tiposCentro = new();
+    private List<string> territorios = new();
+    private List<string> municipios = new();
+
+    // Resultados
+    private List<Centro> centrosFiltrados = new();
+
+    // Filtro actual
+    private CentroFilter filtro = new();
+
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosIniciales();
+    }
+
+    private async Task CargarDatosIniciales()
+    {
+        try
+        {
+            isLoading = true;
+
+            // Cargar listas para selects
+            tiposCentro = (await CentroService.GetTiposCentroAsync()) ?? new List<string>();
+            territorios = (await CentroService.GetTerritoriosAsync()) ?? new List<string>();
+            municipios = (await CentroService.GetMunicipiosAsync()) ?? new List<string>();
+
+            // Cargar todos los centros inicialmente
+            centrosFiltrados = (await CentroService.GetAllCentrosAsync())?.OrderBy(c => c.NOM).ToList() ?? new List<Centro>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando datos iniciales: {ex.Message}");
+            centrosFiltrados = new List<Centro>();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Filtrar()
+    {
+        isLoading = true;
+        try
+        {
+            centrosFiltrados = (await CentroService.GetCentrosFiltradosAsync(filtro)) ?? new List<Centro>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error filtrando centros: {ex.Message}");
+            centrosFiltrados = new List<Centro>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ResetFilters()
+    {
+        filtro.Reset();
+        await CargarDatosIniciales();
+    }
+
+    private async Task OnTipoChanged(ChangeEventArgs e)
+    {
+        filtro.DTITUC = e?.Value?.ToString();
+        territorios = (await CentroService.GetTerritoriosAsync(filtro.DTITUC)) ?? new List<string>();
+        // reset municipios when tipo changes
+        filtro.DMUNIC = string.Empty;
+        municipios = (await CentroService.GetMunicipiosAsync()) ?? new List<string>();
+    }
+
+    private async Task OnTerritorioChanged(ChangeEventArgs e)
+    {
+        filtro.DTERRE = e?.Value?.ToString();
+        municipios = (await CentroService.GetMunicipiosAsync(filtro.DTERRE)) ?? new List<string>();
+        filtro.DMUNIC = string.Empty;
+    }
+
+    private void VerDetalle(int ccen)
+    {
+        // Navegar a la página detalle (asumiendo ruta /centro/{ccen})
+        NavManager.NavigateTo($"/centro/{ccen}");
+    }
+
+    private void AbrirMapa(Centro centro)
+    {
+        // Navegar a la página detalle (incluye mapa)
+        NavManager.NavigateTo($"/centro/{centro.CCEN}");
+    }
+
+    private async Task Recargar()
+    {
+        await CargarDatosIniciales();
+    }
+}

@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Reto02_MAUI.Web.Client\Reto02_MAUI.Web.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
   </ItemGroup>
 
 </Project>

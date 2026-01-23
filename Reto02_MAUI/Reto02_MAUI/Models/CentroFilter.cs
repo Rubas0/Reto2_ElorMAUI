@@ -31,7 +31,7 @@ namespace Reto02_MAUI.Models
         public string DMUNIC { get; set; }
 
         /// <summary>
-        /// Verifica si el filtro está vacío (sin criterios)
+        /// Verifica si el filtro está vacío
         /// </summary>
         public bool IsEmpty()
         {
