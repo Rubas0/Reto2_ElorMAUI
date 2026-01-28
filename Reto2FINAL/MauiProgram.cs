@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Reto2FINAL.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Reto2FINAL
 {
@@ -17,9 +18,16 @@ namespace Reto2FINAL
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
+
+            // Registrar HttpClient
+            builder.Services.AddSingleton<HttpClient>();
+
+            // Registrar servicios
+            builder.Services.AddSingleton<CentrosService>();
+            builder.Services.AddSingleton<WeatherService>();
 
             return builder.Build();
         }

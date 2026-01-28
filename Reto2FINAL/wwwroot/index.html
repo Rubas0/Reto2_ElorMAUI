@@ -9,20 +9,31 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="Reto2FINAL.styles.css" />
     <link rel="icon" href="data:,">
+
+    <!-- Mapbox GL JS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+
+    <!-- Mapbox Directions Plugin -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.css" type="text/css">
+
 </head>
 
 <body>
 
     <div class="status-bar-safe-area"></div>
 
-    <div id="app">Loading...</div>
+    <div id="app">Carganding...</div>
 
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
+        Error inesperade, no funciona.
+        <a href="" class="reload">Recargar (Dudo que esto haga nada)</a>
         <a class="dismiss">🗙</a>
     </div>
-
+    
+    <!--Añadimos el script de mapboux-->
+    <script src="mapbox.js?nocache=@DateTime.Now.Ticks"></script>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
 
 </body>
