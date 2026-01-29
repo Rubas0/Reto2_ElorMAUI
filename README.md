@@ -9,8 +9,6 @@ Características principales
   - Clima: temperatura actual y previsión para los próximos días (obtenido desde WeatherAPI.com).
   - Mapa interactivo con marcador en la ubicación del centro (Mapbox).
 - Soporte para cambiar tipo de mapa (calles, outdoor, satélite).
-- Mensajes de estado y manejo básico de errores en la UI (carga, fallo de clima, mapa sin coordenadas).
-- Código orientado a ser simple y entendible para estudiantes (fácil de mantener y ampliar).
 
 Requisitos
 - .NET MAUI (versión compatible con el proyecto).
@@ -31,3 +29,4 @@ Puntos de evaluación (rúbrica)
 FALTA
 - Checkear boostrap.
 - Documentar códigoa.
+
