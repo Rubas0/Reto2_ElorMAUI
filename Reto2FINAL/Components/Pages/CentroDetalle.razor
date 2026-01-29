@@ -9,7 +9,7 @@
 <div class="container-fluid p-4">
     @if (cargando)
     {
-        <div class="text-center">
+        <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Cargando...</span>
             </div>
@@ -20,35 +20,35 @@
         <div class="alert alert-danger">
             <strong>Error:</strong> Centro no encontrado
         </div>
-        <button class="btn btn-secondary" @onclick="Volver">⬅️ Volver</button>
+        <button class="btn btn-secondary" @onclick="Volver">Volver</button>
     }
     else
     {
-        <!-- Botón volver -->
         <div class="row mb-3">
             <div class="col-12">
-                <button class="btn btn-secondary" @onclick="Volver">⬅️ Volver al listado</button>
+                <button class="btn btn-secondary" @onclick="Volver">Volver al listado</button>
             </div>
         </div>
 
-        <!-- Información del centro -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
-                        <h3>@centro.NOMBRE</h3>
+                        <h3 class="mb-0">@centro.NOMBRE</h3>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Código:</strong> @centro.CODIGO</p>
-                                <p><strong>Dirección:</strong> @centro.DIRECCION</p>
-                                <p><strong>Localidad:</strong> @centro.LOCALIDAD</p>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <p class="mb-2"><strong>Codigo:</strong> @centro.CODIGO</p>
+                                <p class="mb-2"><strong>Direccion:</strong> @centro.DIRECCION</p>
+                                <p class="mb-2"><strong>Localidad:</strong> @centro.LOCALIDAD</p>
+                                <p class="mb-2"><strong>CP:</strong> @centro.CodigoPostal</p>
                             </div>
-                            <div class="col-md-6">
-                                <p><strong>Municipio:</strong> @centro.DMUNIC</p>
-                                <p><strong>Territorio:</strong> @centro.DTERRE</p>
-                                <p><strong>Tipo:</strong> @centro.DTITUC</p>
+                            <div class="col-12 col-md-6">
+                                <p class="mb-2"><strong>Municipio:</strong> @centro.DMUNIC</p>
+                                <p class="mb-2"><strong>Territorio:</strong> @centro.DTERRE</p>
+                                <p class="mb-2"><strong>Tipo:</strong> @centro.DTITUC</p>
+                                <p class="mb-2"><strong>Telefono:</strong> @centro.TELEFONO</p>
                             </div>
                         </div>
                     </div>
@@ -56,53 +56,72 @@
             </div>
         </div>
 
-        <!-- Clima actual -->
-        @if (weatherData?.Current != null)
-        {
-            <div class="row mb-4">
-                <div class="col-12">
+        <div class="row mb-4">
+            <div class="col-12">
+                @if (cargandoClima)
+                {
+                    <div class="alert alert-info">
+                        Cargando informacion meteorologica...
+                    </div>
+                }
+                else if (weatherCurrent != null)
+                {
                     <div class="card">
                         <div class="card-header bg-info text-white">
-                            <h4>Temperatura Actual</h4>
+                            <h4 class="mb-0">Temperatura Actual</h4>
                         </div>
                         <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-md-4">
-                                    <h1 class="display-4">@weatherData.Current.Temperature_2m.ToString("F1")°C</h1>
+                            <div class="row text-center g-3">
+                                <div class="col-12 col-md-4">
+                                    <h1 class="display-4 mb-0">@weatherCurrent.TempC.ToString("F1") C</h1>
+                                    <p class="text-muted">@weatherCurrent.Condition?.Text</p>
                                 </div>
-                                <div class="col-md-4">
-                                    <p><strong>Viento:</strong> @weatherData.Current.Wind_speed_10m.ToString("F1") km/h</p>
+                                <div class="col-6 col-md-4">
+                                    <p class="mb-1"><strong>Viento</strong></p>
+                                    <p class="mb-0 fs-5">@weatherCurrent.WindKph.ToString("F1") km/h</p>
                                 </div>
-                                <div class="col-md-4">
-                                    <p><strong>Código:</strong> @weatherData.Current.Weather_code</p>
+                                <div class="col-6 col-md-4">
+                                    <p class="mb-1"><strong>Humedad</strong></p>
+                                    <p class="mb-0 fs-5">@weatherCurrent.Humidity %</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> No se pudo cargar la informacion del clima
+                    </div>
+                }
             </div>
-        }
+        </div>
 
-        <!-- Previsión próximos días -->
         @if (previsiones.Any())
         {
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header bg-success text-white">
-                            <h4>Previsión Próximos Días</h4>
+                            <h4 class="mb-0">Prevision Proximos Dias</h4>
                         </div>
                         <div class="card-body">
-                            <div class="row">
+                            <div class="row g-3">
                                 @foreach (var dia in previsiones.Take(7))
                                 {
-                                    <div class="col-md-3 col-sm-6 mb-3">
-                                        <div class="card">
-                                            <div class="card-body text-center">
-                                                <h6>@dia.Date</h6>
-                                                <p class="mb-1">@dia.WeatherDescription</p>
-                                                <p class="text-danger mb-0"><strong>Max:</strong> @dia.MaxTemp.ToString("F1")°C</p>
-                                                <p class="text-primary mb-0"><strong>Min:</strong> @dia.MinTemp.ToString("F1")°C</p>
+                                    <div class="col-6 col-sm-4 col-lg-3">
+                                        <div class="card h-100">
+                                            <div class="card-body text-center p-2">
+                                                <h6 class="mb-2">
+                                                    @(DateTime.TryParse(dia.Date, out var fecha) ? fecha.ToString("dd/MM") : dia.Date)
+                                                </h6>
+                                                <p class="mb-2">@dia.WeatherDescription</p>
+                                                <p class="text-danger mb-1">
+                                                    <strong>Max:</strong> @dia.MaxTemp.ToString("F1") C
+                                                </p>
+                                                <p class="text-primary mb-0">
+                                                    <strong>Min:</strong> @dia.MinTemp.ToString("F1") C
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -114,41 +133,44 @@
             </div>
         }
 
-        <!-- Mapa con Mapbox -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-warning">
-                        <h4> Ubicación del Centro</h4>
+                        <h4 class="mb-0">Ubicacion del Centro</h4>
                     </div>
                     <div class="card-body">
-                        <!-- Tipos de mapa -->
+                        @if (!string.IsNullOrEmpty(errorMapa))
+                        {
+                            <div class="alert alert-danger">
+                                <strong>Error:</strong> @errorMapa
+                            </div>
+                        }
+
                         <div class="mb-3">
                             <label class="form-label"><strong>Tipo de mapa:</strong></label>
-                            <div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="mapType" value="streets-v12"
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="mapType" id="map1"
                                            checked="@(tipoMapa == "streets-v12")" @onclick='() => CambiarTipoMapa("streets-v12")'>
-                                    <label class="form-check-label">Calles</label>
+                                    <label class="form-check-label" for="map1">Calles</label>
                                 </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="mapType" value="outdoors-v12"
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="mapType" id="map2"
                                            checked="@(tipoMapa == "outdoors-v12")" @onclick='() => CambiarTipoMapa("outdoors-v12")'>
-                                    <label class="form-check-label">Outdoor</label>
+                                    <label class="form-check-label" for="map2">Outdoor</label>
                                 </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="mapType" value="satellite-streets-v12"
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="mapType" id="map3"
                                            checked="@(tipoMapa == "satellite-streets-v12")" @onclick='() => CambiarTipoMapa("satellite-streets-v12")'>
-                                    <label class="form-check-label">Satélite</label>
+                                    <label class="form-check-label" for="map3">Satelite</label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Contenedor del mapa -->
-                        <div id="map" style="height:500px;width:100%;border-radius:8px;"></div>
+                        <div id="map" style="width:100%;height:500px;background-color:#e0e0e0;border:2px solid #ccc;"></div>
 
-                        <!-- Info de coordenadas al mover el mouse -->
-                        <div id="info" class="mt-2 text-muted small"></div>
+                        <div id="info" class="mt-2 text-muted"></div>
                     </div>
                 </div>
             </div>
@@ -161,12 +183,13 @@
     public string? Codigo { get; set; }
 
     private Centro? centro;
-    private WeatherData? weatherData;
+    private CurrentWeatherApi? weatherCurrent;
     private List<WeatherDay> previsiones = new();
     private bool cargando = true;
+    private bool cargandoClima = false;
+    private string errorMapa = string.Empty;
 
-    // Mapbox
-    private string token = "pk.eyJ1IjoicnViYXNvIiwiYSI6ImNta2VkN2hnZzAwNG0zY3FwazM5ZGVvMWgifQ.7OF2w8ytXYGzHQMNKQ7FVg";
+    private string token = "pk.eyJ1IjoiaW5mamdvbnphbGV6IiwiYSI6ImNsODcyMXF6cDE0ZDI0MmxoODFqMzR3OGIifQ.VAuTB3faQPTx7P6bRnEZjg";
     private int zoom = 14;
     private string tipoMapa = "streets-v12";
     private bool mapaInicializado = false;
@@ -178,8 +201,9 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && centro != null)
+        if (firstRender && centro != null && centro.LatitudNumeric != 0 && centro.LongitudNumeric != 0)
         {
+            await Task.Delay(1000);
             await InicializarMapa();
         }
     }
@@ -192,10 +216,30 @@
         {
             centro = await CentrosService.ObtenerCentroPorCodigoAsync(Codigo);
 
-            if (centro != null && centro.LatitudNumeric != 0 && centro.LongitudNumeric != 0)
+            if (centro != null)
             {
-                weatherData = await WeatherService.ObtenerClimaAsync(centro.LatitudNumeric, centro.LongitudNumeric);
-                previsiones = WeatherService.ProcesarPrevisiones(weatherData);
+                cargandoClima = true;
+                StateHasChanged();
+
+                try
+                {
+                    var (current, forecast) = await WeatherService.ObtenerClimaAsync(
+                        centro.DMUNIC,
+                        centro.TerritorioNormalizado
+                    );
+
+                    weatherCurrent = current;
+                    previsiones = forecast;
+                }
+                catch
+                {
+                    weatherCurrent = null;
+                    previsiones = new List<WeatherDay>();
+                }
+                finally
+                {
+                    cargandoClima = false;
+                }
             }
         }
 
@@ -204,11 +248,16 @@
 
     private async Task InicializarMapa()
     {
-        if (centro == null || mapaInicializado) return;
+        if (centro == null || centro.LatitudNumeric == 0 || centro.LongitudNumeric == 0)
+        {
+            errorMapa = "Coordenadas invalidas";
+            return;
+        }
 
         try
         {
             var mapStyle = $"mapbox://styles/mapbox/{tipoMapa}";
+
             await JSRuntime.InvokeVoidAsync("initializeMap",
                 token,
                 centro.LatitudNumeric,
@@ -216,17 +265,21 @@
                 zoom,
                 centro.NOMBRE,
                 mapStyle);
+
             mapaInicializado = true;
+            errorMapa = string.Empty;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Manejo de errores que no se hace pero eso
+            errorMapa = $"Error al inicializar mapa: {ex.Message}";
         }
     }
 
     private async Task CambiarTipoMapa(string nuevoTipo)
     {
         tipoMapa = nuevoTipo;
+        mapaInicializado = false;
+        await Task.Delay(300);
         await InicializarMapa();
     }
 

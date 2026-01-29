@@ -1,41 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Reto2FINAL</title>
+    <title>ElorMAUI - Framework Educativo</title>
     <base href="/" />
+
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="stylesheet" href="Reto2FINAL.styles.css" />
-    <link rel="icon" href="data:,">
 
     <!-- Mapbox GL JS -->
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
-    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
 
     <!-- Mapbox Directions Plugin -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.js"></script>
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.css" type="text/css">
 
+    <!-- CSS personalizados -->
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="Reto2FINAL.styles.css" />
+
+    <link rel="icon" href="data:,">
 </head>
 
 <body>
-
     <div class="status-bar-safe-area"></div>
 
-    <div id="app">Carganding...</div>
+    <div id="app">Cargando...</div>
 
     <div id="blazor-error-ui">
-        Error inesperade, no funciona.
-        <a href="" class="reload">Recargar (Dudo que esto haga nada)</a>
-        <a class="dismiss">🗙</a>
+        Ha ocurrido un error inesperado.
+        <a href="" class="reload">Recargar</a>
+        <a class="dismiss">Cerrar</a>
     </div>
-    
-    <!--Añadimos el script de mapboux-->
-    <script src="mapbox.js?nocache=@DateTime.Now.Ticks"></script>
+
+    <!-- Scripts de Mapbox -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.js"></script>
+
+    <!-- Script personalizado de mapas -->
+    <script src="mapbox.js"></script>
+
+    <!-- Blazor WebView -->
     <script src="_framework/blazor.webview.js" autostart="false"></script>
-
 </body>
-
 </html>

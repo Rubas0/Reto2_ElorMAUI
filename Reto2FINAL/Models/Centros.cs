@@ -5,7 +5,7 @@ namespace Reto2FINAL.Models
     public class CentrosResponse
     {
         [JsonProperty("CENTROS")]
-        public List<Centro> Centros { get; set; } = new();
+        public List<Centro> Centros { get; set; } = new List<Centro>();
     }
 
     public class Centro
@@ -62,9 +62,9 @@ namespace Reto2FINAL.Models
         public string CODIGO => Codigo.ToString();
         public string LOCALIDAD => DMUNIC; 
 
-        // Propiedades computadas para coordenadas (ya son double directamente)
-        public double LatitudNumeric => LATITUD;
-        public double LongitudNumeric => LONGITUD;
+        // Propiedades computadas para coordenadas 
+        public double LatitudNumeric => LONGITUD;
+        public double LongitudNumeric => LATITUD;
 
         // Normalizar territorio
         public string TerritorioNormalizado
