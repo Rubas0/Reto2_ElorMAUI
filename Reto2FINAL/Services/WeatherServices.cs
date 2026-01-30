@@ -22,46 +22,30 @@ namespace Reto2FINAL.Services
         {
             if (string.IsNullOrWhiteSpace(API_KEY))
             {
-                Console.WriteLine("[WeatherService] ERROR: API_KEY no configurada.");
                 return (null, new List<WeatherDay>());
             }
 
             if (string.IsNullOrWhiteSpace(municipio))
             {
-                Console.WriteLine("[WeatherService] ERROR: municipio vacío.");
                 return (null, new List<WeatherDay>());
             }
 
             try
             {
-                // Query que escapa caracteres. (tildes y cosas raras)
                 var queryParts = string.IsNullOrWhiteSpace(territorio)
                     ? municipio
                     : $"{municipio}, {territorio}, Spain";
 
-                var query = Uri.EscapeDataString(queryParts);
-                var url = $"{WEATHER_API_URL}?key={API_KEY}&q={query}&days=7&lang=es";
+                var q = Uri.EscapeDataString(queryParts);
+                var url = $"{WEATHER_API_URL}?key={API_KEY}&q={q}&days=7&lang=es";
 
-                Console.WriteLine($"[WeatherService] Petición a WeatherAPI: {url}");
-
-                // Obtener JSON crudo para poder depurar si algo falla
+                // Obtener JSON y deserializar
                 var json = await _httpClient.GetStringAsync(url);
-                Console.WriteLine($"[WeatherService] Tamaño JSON recibido: {json?.Length ?? 0}");
-
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var response = JsonSerializer.Deserialize<WeatherApiResponse>(json, options);
 
-                if (response == null)
+                if (response == null || response.Current == null)
                 {
-                    Console.WriteLine("[WeatherService] Deserialización falló: response es null. JSON inicio:");
-                    Console.WriteLine(json.Length > 2000 ? json.Substring(0, 2000) + "..." : json);
-                    return (null, new List<WeatherDay>());
-                }
-
-                if (response.Current == null)
-                {
-                    Console.WriteLine("[WeatherService] response.Current es null. JSON inicio:");
-                    Console.WriteLine(json.Length > 2000 ? json.Substring(0, 2000) + "..." : json);
                     return (null, new List<WeatherDay>());
                 }
 
@@ -85,14 +69,9 @@ namespace Reto2FINAL.Services
 
                 return (response.Current, previsiones);
             }
-            catch (HttpRequestException httpEx)
+            catch
             {
-                Console.WriteLine($"[WeatherService] HttpRequestException: {httpEx.Message}");
-                return (null, new List<WeatherDay>());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[WeatherService] Exception: {ex}");
+                // Vacio para gestionarlo en la UI
                 return (null, new List<WeatherDay>());
             }
         }

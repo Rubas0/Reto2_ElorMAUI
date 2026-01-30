@@ -8,6 +8,7 @@ namespace Reto2FINAL.Models
         public List<Centro> Centros { get; set; } = new List<Centro>();
     }
 
+    //API en http://10.5.104.110:8080/EuskadiLatLon.json
     public class Centro
     {
         [JsonProperty("CCEN")]
@@ -16,26 +17,16 @@ namespace Reto2FINAL.Models
         [JsonProperty("NOM")]
         public string NOMBRE { get; set; } = string.Empty;
 
-        [JsonProperty("NOME")]
-        public string NombreEuskera { get; set; } = string.Empty;
-
         [JsonProperty("DMUNIC")]
         public string DMUNIC { get; set; } = string.Empty;
-
-        [JsonProperty("DMUNIE")]
-        public string MunicipioEuskera { get; set; } = string.Empty;
 
         [JsonProperty("DTERRE")]
         public string DTERRE { get; set; } = string.Empty;
 
-        [JsonProperty("DTERRC")]
-        public string TerritorioEuskera { get; set; } = string.Empty;
 
         [JsonProperty("DTITUC")]
         public string DTITUC { get; set; } = string.Empty;
 
-        [JsonProperty("DTITUE")]
-        public string TipoEuskera { get; set; } = string.Empty;
 
         [JsonProperty("DOMI")]
         public string DIRECCION { get; set; } = string.Empty;
@@ -62,7 +53,7 @@ namespace Reto2FINAL.Models
         public string CODIGO => Codigo.ToString();
         public string LOCALIDAD => DMUNIC; 
 
-        // Propiedades computadas para coordenadas 
+        // Están al revés
         public double LatitudNumeric => LONGITUD;
         public double LongitudNumeric => LATITUD;
 

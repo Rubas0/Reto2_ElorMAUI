@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Reto2FINAL.Models
 {
+    // Pedir api del clima
     public class WeatherApiResponse
     {
         [JsonPropertyName("location")]
@@ -15,6 +16,7 @@ namespace Reto2FINAL.Models
         public Forecast? Forecast { get; set; }
     }
 
+    //Para pedirle a la API los datos necesarios
     public class Location
     {
         [JsonPropertyName("name")]
@@ -119,7 +121,6 @@ namespace Reto2FINAL.Models
         [JsonPropertyName("day")]
         public DayForecast? Day { get; set; }
 
-        // opcional: horas si quieres detalle por hora
         [JsonPropertyName("hour")]
         public List<HourForecast>? Hour { get; set; }
     }
@@ -172,7 +173,7 @@ namespace Reto2FINAL.Models
         public int Humidity { get; set; }
     }
 
-    // Muestra un día simplificado
+    // Muestra un día (Fecha, temp, descripcion)
     public class WeatherDay
     {
         public string Date { get; set; } = string.Empty;
